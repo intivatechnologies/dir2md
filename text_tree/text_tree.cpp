@@ -26,7 +26,7 @@ string TextTree::startAt(const char* root) {
 			break;
 		}
 
-		text_tree += indentation + pl.getLine() + "\n";
+		text_tree += indentation + pl.to_string() + "\n";
 	}
 
 	return text_tree;

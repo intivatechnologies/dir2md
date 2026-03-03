@@ -28,7 +28,7 @@ namespace text_tree {
 		static void writeDirectory(vector<PlacedLine>& container, string absPath, string rootName,
 			PlaceOperation startingOperation = PlaceOperation::CONTINUE);
 
-		const string& getLine() const { return line; };
+		const string& to_string() const { return line; };
 		const PlaceOperation& getPlaceOperation() const { return placeOperation; };
 		explicit PlacedLine(string line, PlaceOperation placeOperation = PlaceOperation::CONTINUE)
 			: line(line), placeOperation(placeOperation) {
