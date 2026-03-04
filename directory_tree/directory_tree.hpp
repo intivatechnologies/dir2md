@@ -9,21 +9,31 @@ using namespace std;
 namespace directory_tree {
 	class FileRep {
 	protected:
-		string name;
+		const string name;
 
 	public:
-		FileRep(string name) : name(name) {}
+		FileRep(const string name) : name(name) {}
+
+		virtual ~FileRep() = default; // Make destructor virtual for polymorphism
+
+		const string getName() const {
+			return name;
+		}
 	};
 
 	class FolderRep : public FileRep {
-		vector<FileRep> children;
+		const vector<FileRep*> children;
 
 	public:
-		FolderRep(string name, vector<FileRep> children) : FileRep(name), children(children) {}
+		FolderRep(const string name, const vector<FileRep*> children) : FileRep(name), children(children) {}
+
+		const vector<FileRep*> getChildren() const {
+			return children;
+		}
 	};
 
 	class DirectoryTree {
-		static FolderRep getDirectoryChildren(string root);
+		static FolderRep* getFolderAtRoot(string root);
 
 	public:
 		static string startAt(string root);
