@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <map>
 
 #include "../file_records/folder_rep.hpp"
 
@@ -19,6 +17,7 @@ namespace directory_tree {
 
 		void modifyIndentationStep(bool positiveStep);
 		void getFamilyOfChildren(string& textualRep, FolderRep* parent);
+		void getFamily(string& textualRep, FolderRep* parent);
 
 	public:
 		static DirectoryTree& getInstance() {

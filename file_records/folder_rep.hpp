@@ -9,14 +9,18 @@ using namespace std;
 
 namespace file_records {
 	class FileRecord {
-		const string name;
+		const string name, root;
 
 	public:
-		FileRecord(const string name) : name(name) {}
+		FileRecord(const string name, const string root) : name(name), root(root) {}
 		virtual ~FileRecord() = default; // Make destructor virtual for polymorphism
 
 		const string getName() const {
 			return name;
+		}
+
+		const string getRoot() const {
+			return root;
 		}
 	};
 
@@ -25,7 +29,8 @@ namespace file_records {
 		const string extension;
 
 	public:
-		FileRep(const string name, const string extension) : FileRecord(name), extension(extension) {}
+		FileRep(const string name, const string root, const string extension) 
+			: FileRecord(name, root), extension(extension) {}
 
 		const string getExtension() const {
 			return extension;
@@ -33,13 +38,17 @@ namespace file_records {
 	};
 
 	class FolderRep : public FileRecord {
+		static const vector<string> disincludeFolders;
+
 		const vector<FileRecord*> children;
 
 	public:
 		static FolderRep* installFolderAtRoot(string root);
+		static void loadAllRootsByExtension(vector<string>& roots, FolderRep* parentFolder,
+			const string ext);
 
-		FolderRep(const string name, const vector<FileRecord*> children)
-			: FileRecord(name), children(children) {}
+		FolderRep(const string name, const string root, const vector<FileRecord*> children)
+			: FileRecord(name, root), children(children) {}
 
 		const vector<FileRecord*>& getChildren() const {
 			return children;

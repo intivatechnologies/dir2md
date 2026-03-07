@@ -4,18 +4,43 @@
 #include <filesystem>
 
 using namespace file_records;
-using namespace std::filesystem;
+
+const vector<string> FolderRep::disincludeFolders = { ".git", "build" };
 
 FolderRep* FolderRep::installFolderAtRoot(string root) {
 	vector<FileRecord*> rootChildren;
+	const string name = getRootName(root);
 
-	for (const auto& entry : directory_iterator(root)) {
-		if (entry.is_regular_file())
-			rootChildren.push_back(new FileRep(entry.path().filename().string(),
-				entry.path().extension().string()));
-		else
-			rootChildren.push_back(installFolderAtRoot(entry.path().string()));
+	bool disincludeFolder = false;
+	for (string disincluded : disincludeFolders) {
+		if(name == disincluded) {
+			disincludeFolder = true;
+			break;
+		}
 	}
 
-	return new FolderRep(getRootName(root), rootChildren);
+	if(!disincludeFolder)
+		for (const auto& entry : filesystem::directory_iterator(root)) {
+			filesystem::path path = entry.path();
+			if (entry.is_regular_file())
+				rootChildren.push_back(new FileRep(path.filename().string(), path.string(),
+					path.extension().string()));
+			else
+				rootChildren.push_back(installFolderAtRoot(path.string()));
+		}
+
+	return new FolderRep(name, root, rootChildren);
+}
+
+void FolderRep::loadAllRootsByExtension(vector<string>& roots, FolderRep* parentFolder,
+const string ext) {
+	for (const auto& child : parentFolder->getChildren()) {
+		if (dynamic_cast<FileRep*>(child) != nullptr) {
+			FileRep* sameChild = static_cast<FileRep*>(child);
+			if (sameChild->getExtension() == ext)
+				roots.push_back(sameChild->getRoot());
+		}
+		else if (dynamic_cast<FolderRep*>(child) != nullptr)
+			loadAllRootsByExtension(roots, static_cast<FolderRep*>(child), ext);
+	}
 }

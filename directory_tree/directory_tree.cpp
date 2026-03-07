@@ -4,7 +4,6 @@
 #include <filesystem>
 
 using namespace directory_tree;
-using namespace std::filesystem;
 
 const char DirectoryTree::indentationUnits[3] = { ' ', ' ' };
 
@@ -18,26 +17,29 @@ void DirectoryTree::modifyIndentationStep(bool positiveStep) {
 }
 
 void DirectoryTree::getFamilyOfChildren(string& textualRep, FolderRep* parent) {
-	textualRep += indentationVolume + parent->getName() + '\n';
 	modifyIndentationStep(true);
 
 	vector<FileRecord*> children = parent->getChildren();
 	if(children.size() > 0)
 		for (const auto& entryChild : children) {
 			if (entryChild != nullptr) {
+				textualRep += indentationVolume + entryChild->getName() + '\n';
 				if (dynamic_cast<FolderRep*>(entryChild) != nullptr)
 					getFamilyOfChildren(textualRep, static_cast<FolderRep*>(entryChild));
-
-				textualRep += indentationVolume + entryChild->getName() + '\n';
 			}
 		}
 		
 	modifyIndentationStep(false);
 }
 
+void DirectoryTree::getFamily(string& textualRep, FolderRep* parent) {
+	textualRep += indentationVolume + parent->getName() + '\n';
+	getFamilyOfChildren(textualRep, parent);
+}
+
 string DirectoryTree::startAt(FolderRep* rep) {
 	string textualRep = "";
-	getFamilyOfChildren(textualRep, rep);
+	getFamily(textualRep, rep);
 
 	return textualRep;
 }
