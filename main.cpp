@@ -1,65 +1,39 @@
-#include <iostream>
-
-#include <vector>
 #include <string>
-#include <map>
+#include <vector>
+#include <iostream>
+#include <filesystem>
 
-#include <functional>
-
-#include <fstream>
-#include <sstream>
-
-#include "file_records/folder_rep.hpp"
-#include "directory_tree/directory_tree.hpp"
-#include "misc/get_content_from_files.hpp"
+#include "misc/get_root_name.hpp"
 
 using namespace std;
-using namespace file_records;
-using namespace directory_tree;
 
-static vector<string> includeForFileContents;
-static map<string, string> fileContents;
+static const string TAB_SPACE = "  ";
+static string loadedTabSequence = "";
+static vector<string> dontIncludeFolders = { ".git", "build" };
+
+void traverseRoot(string& buildTree, string root) {
+	for(const auto& disincludedFolder : dontIncludeFolders)
+		if(getRootName(root) == disincludedFolder)
+			return;
+
+	loadedTabSequence += TAB_SPACE;
+	for (const auto& entry : filesystem::directory_iterator(root)) {
+		buildTree += loadedTabSequence + getRootName(entry.path().string()) + '\n';
+		if (entry.is_directory())
+			traverseRoot(buildTree, entry.path().string());
+	}
+	loadedTabSequence = loadedTabSequence
+		.substr(0, loadedTabSequence.size() - TAB_SPACE.size());
+}
 
 int main(int argc, char* argv[]) {
 	if (argc > 1) {
-		if (argc > 2) {
-			for (int i = 2; i < argc; i++)
-				includeForFileContents.push_back(argv[i]);
-		}
+		//then we have a root path to work with
+		string buildTree = getRootName(argv[1]) + '\n';
+		traverseRoot(buildTree, argv[1]);
 
-		FolderRep* assignedFolder = FolderRep::installFolderAtRoot(argv[1]);
-
-		/*
-		for (const auto& child : assignedFolder->getChildren())
-			cout << child->getName() << endl;
-			*/
-
-		string textualRep = DirectoryTree::getInstance().startAt(assignedFolder);
-
-		cout << "> PROJECT STRUCTURE:" << endl;
-		cout << textualRep << endl << endl;
-
-		if (argc > 2) {
-			vector<string> allRootsByExtensions;
-			for (int i = 2; i < argc; i++)
-				FolderRep::loadAllRootsByExtension(allRootsByExtensions, assignedFolder, argv[i]);
-			
-			cout << "> FILE PATHS TO DISPLAY CONTENTS" << endl;
-			for (string rootByExtension : allRootsByExtensions)
-				cout << rootByExtension << endl;
-			cout << endl;
-
-			vector<string> contentsOfAppliedFiles = getContentFromFiles(allRootsByExtensions);
-
-			for(int i = 0; i < allRootsByExtensions.size(); i++) {
-				cout << "> CONTENTS OF \"" << allRootsByExtensions[i] << "\":" << endl;
-				cout << contentsOfAppliedFiles[i] << endl << endl;
-			}
-		}
-
-		return 0;
+		cout << buildTree << endl;
 	}
 
-	cout << "An input directory could not be found." << endl;
-	return -1;
+	return 0;
 }
