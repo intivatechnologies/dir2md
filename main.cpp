@@ -1,3 +1,6 @@
+#define K_INCLUDE_EXT "include-ext"
+#define K_EXCLUDE_DIR "exclude-dir"
+
 #include <iostream>
 #include <vector>
 #include <map>
@@ -13,20 +16,21 @@
 using namespace std;
 using namespace file_records;
 
-static vector<string> dontIncludeFolderNests = { ".git", "build" };
 static map<string, vector<string>*> flags;
 
-void buildTree(FilesystemNode& rootNode) {
-	const vector<string> EXCLUDE_DIRS = flags.count("exclude-dir") > 0
-		? *flags.at("exclude-dir") : vector<string>();
+static struct TagSet {
+	vector<string> INCLUDE_EXTENSIONS;
+	vector<string> EXCLUDE_DIRECTORIES;
+} TAGS;
 
+void buildTree(FilesystemNode& rootNode) {
 	for (filesystem::directory_entry entry : filesystem::directory_iterator(rootNode.getPath())) {
 		FilesystemNode entryNode(&entry);
 	
 		if (entry.is_directory()) {
 			bool isADisincludedFolderNest = false;
 	
-			for (const auto& disincludeFolderNest : EXCLUDE_DIRS)
+			for (const auto& disincludeFolderNest : TAGS.EXCLUDE_DIRECTORIES)
 				if (entryNode.getName() == disincludeFolderNest) {
 					isADisincludedFolderNest = true;
 					break;
@@ -62,21 +66,33 @@ int main(int argc, char* argv[]) {
 				currentFlag = token.substr(2); // remove "--"
 				currentTags = new vector<string>();
 			}
+
+			//process for tags
 			else
 				currentTags->push_back(token);
 		}
 		flags.insert(pair(currentFlag, currentTags));
 
-		//ensure file extensions have a dot char at the beginning
-		vector<string>& INCLUDE_EXTENSIONS = flags.count("include-ext") > 0
-			? *flags.at("include-ext") : vector<string>();
-		if (INCLUDE_EXTENSIONS.size() > 0)
-			for (auto& tag : INCLUDE_EXTENSIONS) {
-				if (tag[0] != '.')
-					tag.insert(tag.begin(), '.');
+		//assign tags and refine where needed
+		{
+			//ensure file extensions have a dot char at the beginning
+			vector<string>* includeExtPtr = flags.count(K_INCLUDE_EXT) > 0
+				? flags.at(K_INCLUDE_EXT) : nullptr;
+			if (includeExtPtr != nullptr) {
+				for (auto& tag : *includeExtPtr) {
+					if (tag[0] != '.')
+						tag.insert(tag.begin(), '.');
+				}
+
+				TAGS.INCLUDE_EXTENSIONS = *includeExtPtr;
 			}
+			else
+				TAGS.INCLUDE_EXTENSIONS = vector<string>();
+
+			TAGS.EXCLUDE_DIRECTORIES = flags.count(K_EXCLUDE_DIR) > 0
+				? *flags.at(K_EXCLUDE_DIR) : vector<string>();
+		}
 		
-		/*
 		//print all flags and tags
 		for (const auto& pair : flags) {
 			cout << "--" << pair.first;
@@ -84,7 +100,7 @@ int main(int argc, char* argv[]) {
 				cout << ' ' << tag;
 			cout << endl;
 		}
-		*/
+		cout << endl;
 
 		if (flags.count("root") > 0 && flags.at("root")->size() == 1) {
 			//then we have a root path to work with
@@ -107,7 +123,7 @@ int main(int argc, char* argv[]) {
 					contentExtensions.push_back(argv[i]);
 
 				cout << "> CONTENT EXTENSIONS:" << endl;
-				for(string contentExtension : INCLUDE_EXTENSIONS)
+				for(auto& contentExtension : TAGS.INCLUDE_EXTENSIONS)
 					cout << '-' << contentExtension << endl;
 				cout << endl;
 
