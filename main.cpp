@@ -50,10 +50,8 @@ bool runContentExtensionsCheckValidation(Flags& conf, const map<string, vector<s
 int main(int argc, char* argv[]) {
 	//AssignedTests::runTests();
 
-	const int FLAGS_INDEX = 1;
-
-	if (argc > FLAGS_INDEX) {
-		Flags conf = parseFlags(FLAGS_INDEX, argc, argv);
+	if (argc > 1) {
+		Flags conf = parseFlags(argc, argv);
 
 		const auto FLAG_INCLUDE_EXTENSIONS_ITER = conf.flags.find(K_INCLUDE_EXT);
 		installFlags(conf, FLAG_INCLUDE_EXTENSIONS_ITER);

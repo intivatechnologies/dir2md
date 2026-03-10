@@ -22,7 +22,7 @@ namespace test_repurposing {
 
 			auto argv = TestUtil::makeArgv(args);
 
-			Flags conf = parseFlags(1, argv.size(), argv.data());
+			Flags conf = parseFlags(argv.size(), argv.data());
 
 			TestUtil::assertTrue(conf.flags["root"][0] == "./repo", "root flag parsed");
 			TestUtil::assertTrue(conf.flags["mode"][0] == "structure", "mode parsed");
@@ -37,7 +37,7 @@ namespace test_repurposing {
 
 			auto argv = TestUtil::makeArgv(args);
 
-			Flags conf = parseFlags(1, argv.size(), argv.data());
+			Flags conf = parseFlags(argv.size(), argv.data());
 
 			TestUtil::assertTrue(conf.flags["exclude-dir"].size() == 3, "exclude-dir has 3 entries");
 		}
@@ -51,7 +51,7 @@ namespace test_repurposing {
 
 			auto argv = TestUtil::makeArgv(args);
 
-			Flags conf = parseFlags(1, argv.size(), argv.data());
+			Flags conf = parseFlags(argv.size(), argv.data());
 
 			auto it = conf.flags.find(K_INCLUDE_EXT);
 			installFlags(conf, it);
@@ -70,7 +70,7 @@ namespace test_repurposing {
 
 			auto argv = TestUtil::makeArgv(args);
 
-			Flags conf = parseFlags(1, argv.size(), argv.data());
+			Flags conf = parseFlags(argv.size(), argv.data());
 
 			auto it = conf.flags.find(K_INCLUDE_EXT);
 			installFlags(conf, it);

@@ -31,7 +31,7 @@ namespace client {
 	*/
 
 	//populate map 'flags' with all flags and tags
-	Flags parseFlags(const int FLAGS_INDEX, int argc, char* argv[]) {
+	Flags parseFlags(int argc, char* argv[]) {
 		Flags conf;
 
 		auto compareToEscapeCharacter = [](char beingCompared) {
@@ -43,18 +43,13 @@ namespace client {
 		};
 
 		string currentFlag = "";
-		for (int i = FLAGS_INDEX; i < argc; i++) {
+		for (int i = 0; i < argc; i++) {
 			string token = argv[i];
-			cout << "token: " << token << endl;
-			while (!token.empty() && compareToEscapeCharacter(token.front()))
-				token = token.substr(1);
+			//cout << "argv[" << (i+1) << "/" << argc << "]: \"" << token << "\"" << endl;
+			if (compareToEscapeCharacter(token[0]) || compareToEscapeCharacter(token[token.size() - 1]))
+				throw "None of your tokens may contain an escape character in their rvalue or lvalue.";
 
 			if (!token.empty()) {
-				/*
-				if (compareToEscapeCharacter(token.back()))
-					token.pop_back();
-					*/
-
 				//process for --flags
 				if (token.rfind("--", 0) == 0)
 				{
@@ -63,8 +58,10 @@ namespace client {
 				}
 
 				//process for tags
-				else if (currentFlag.size() > 0)
+				else if (currentFlag.size() > 0) {
 					conf.flags[currentFlag].push_back(token);
+					//cout << "Added tag \"" << token << "\" to flag \"--" << currentFlag << "\"" << endl;
+				}
 			}
 		}
 
@@ -75,7 +72,8 @@ namespace client {
 	}
 
 	//assign tags and refine where needed
-	void installFlags(Flags& conf, const map<string, vector<string>>::iterator FLAG_INCLUDE_EXTENSIONS_ITER) {
+	void installFlags(Flags& conf, const map<string, vector<string>>
+	::iterator FLAG_INCLUDE_EXTENSIONS_ITER) {
 		//ensure file extensions have a dot char at the beginning
 		if (FLAG_INCLUDE_EXTENSIONS_ITER != conf.flags.end())
 			for (auto& tag : FLAG_INCLUDE_EXTENSIONS_ITER->second) {
