@@ -15,14 +15,14 @@ namespace file_records {
 		filesystem::path path;
 		vector<FilesystemNode> children;
 
-		FilesystemNode(filesystem::directory_entry* directoryEntry) {
-			name = directoryEntry->path().filename().string();
-			path = directoryEntry->path();
-			if (directoryEntry->is_regular_file())
-				extension = directoryEntry->path().extension().string();
+		FilesystemNode(filesystem::directory_entry& directoryEntry) {
+			name = directoryEntry.path().filename().string();
+			path = directoryEntry.path();
+			if (directoryEntry.is_regular_file())
+				extension = directoryEntry.path().extension().string();
 		}
 
-		void buildOut(vector<string> excludeDirs);
+		void buildOut(const vector<string>& patterns);
 	};
 }
 

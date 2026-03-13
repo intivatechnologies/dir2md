@@ -22,6 +22,26 @@ namespace client {
 			return flags.find(key) != flags.end();
 		}
 
+		//return vector is immutable; you cannot add to it
+        const vector<string>& get(const string& key) {
+			auto it = flags.find(key);
+			if (it != flags.end()) 
+				return it->second;
+
+			//this wouldn't be safe if the vector were mutable because the variable's
+			//allocation is independent of the key
+			static const vector<string> empty;
+			return empty;
+        }
+
+		const string& getAt(const string& key, int index) {
+			return get(key)[index];
+		}
+
+		void add(const string& key, const string value) {
+			flags[key].push_back(value);
+		}
+
 		void parse(int argc, char* argv[]) {
 			string currentFlag;
 			const string escapes = "\\\"'\n\t\r";
@@ -63,11 +83,13 @@ namespace client {
 		Flags conf;
 		conf.parse(argc, argv);
 
+		/*
 		//ensure file extensions have a dot char at the beginning
 		for (int i = 0; i < conf.flags[K_INCLUDE_EXT].size(); i++) {
 			if (conf.flags[K_INCLUDE_EXT][i][0] != '.')
 				conf.flags[K_INCLUDE_EXT][i] = '.' + conf.flags[K_INCLUDE_EXT][i];
 		}
+		*/
 
 		//extract one or modes into K_MODE
 		vector<string> modes = conf.flags[K_MODE];
@@ -80,7 +102,7 @@ namespace client {
 		}
 
 		//print all flags and tags
-		//printAllFlagsAndTags(conf);
+		printAllFlagsAndTags(conf);
 
 		return conf;
 	}

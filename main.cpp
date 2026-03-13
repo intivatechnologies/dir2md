@@ -1,5 +1,4 @@
-constexpr const char* K_INCLUDE_EXT = "include-ext";
-constexpr const char* K_EXCLUDE_DIR = "exclude-dir";
+constexpr const char* K_IGNORE = "ignore";
 constexpr const char* K_MODE = "mode";
 constexpr const char* K_ROOT = "root";
 
@@ -34,13 +33,15 @@ void presentStructureTreeIfPrompted(Flags& conf, FilesystemNode& rootNode) {
 
 bool presentContentsIfPrompted(Flags& conf, FilesystemNode& rootNode) {
 	if (conf.MODE_FLAG & conf.MF_CONTENT) {
+		/*
 		//list all roots with extensions that are dedicated to content extraction
 		vector<string> contentRoots;
-		traverseContentRootsByExtension(contentRoots, rootNode, conf.flags[K_INCLUDE_EXT]);
+		traverseContentRootsByExtension(contentRoots, rootNode, conf.get(K_INCLUDE_EXT));
 
 		cout << endl << "> CONTENT ROOTS:" << endl;
 		for (string contentRoot : contentRoots)
 			cout << ">> " << contentRoot << endl;
+			*/
 
 		/*
 		vector<string> contents = getContentFromFiles(contentRoots);
@@ -58,10 +59,11 @@ bool presentContentsIfPrompted(Flags& conf, FilesystemNode& rootNode) {
 		return false;
 }
 
+/*
 bool checkThatContentExtensionsAreAvailable(Flags& conf) {
-	if (conf.has(K_INCLUDE_EXT) && conf.flags[K_INCLUDE_EXT].size() > 0) {
+	if (conf.get(K_INCLUDE_EXT).size() > 0) {
 		cout << "> CONTENT EXTENSIONS:" << endl;
-		for (auto& contentExtension : conf.flags[K_INCLUDE_EXT])
+		for (auto& contentExtension : conf.get(K_INCLUDE_EXT))
 			cout << '-' << contentExtension << endl;
 
 		return true;
@@ -71,6 +73,7 @@ bool checkThatContentExtensionsAreAvailable(Flags& conf) {
 		return false;
 	}
 }
+*/
 
 int main(int argc, char* argv[]) {
 	//AssignedTests::runTests();
@@ -80,12 +83,12 @@ int main(int argc, char* argv[]) {
 
 		if (conf.has(K_ROOT)) {
 			//then we have a root path to work with
-			filesystem::path rootPath(conf.flags[K_ROOT].at(0));
+			filesystem::path rootPath(conf.flags[K_ROOT][0]);
 			filesystem::directory_entry rootEntry(rootPath);
 
 			//build the tree
-			FilesystemNode rootNode(&rootEntry);
-			rootNode.buildOut(conf.flags[K_EXCLUDE_DIR]);
+			FilesystemNode rootNode(rootEntry);
+			rootNode.buildOut(conf.get(K_IGNORE));
 			presentStructureTreeIfPrompted(conf, rootNode);
 			
 			//present the contents

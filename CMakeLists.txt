@@ -8,6 +8,7 @@ set(SOURCES
     "main.cpp"
     "misc/get_root_name.hpp"
     "misc/get_content_from_files.hpp"
+    "misc/glob_pattern_support.hpp"
     "file_records/filesystem_node.hpp"
     "file_records/filesystem_node.cpp"
     "traversals/traversals_content_roots.hpp"
