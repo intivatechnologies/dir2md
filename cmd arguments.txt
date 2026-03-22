@@ -2,4 +2,4 @@
 
 --root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --ignore .git/* build/* node_modules/* --max-lines 200
 
---root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --max-lines 200
+--root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --use-repo-config --max-lines 200

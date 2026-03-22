@@ -1,6 +1,8 @@
 inline constexpr const char* K_IGNORE = "ignore";
+inline constexpr const char* K_IGNORE_FROM = "ignore-from";
 inline constexpr const char* K_MODE = "mode";
 inline constexpr const char* K_ROOT = "root";
+inline constexpr const char* K_USE_REPO_CONFIG = "use-repo-config";
 
 #include <iostream>
 #include <vector>
@@ -199,9 +201,94 @@ int main(int argc, char* argv[]) {
 		if (conf.has(K_ROOT)) {
 			const path rootPath(conf.flags[K_ROOT][0]);
 
+			// 1. Get the Local AppData path (No Admin required)
+			char* localAppData = nullptr;
+			size_t localLen = 0;
+			_dupenv_s(&localAppData, &localLen, "LOCALAPPDATA");
+
+			// 2b. Get ready for the ignore paths
+			vector<string> ignorePaths;
+
+			// 3. Assemble the ignore paths
+			if (conf.has(K_IGNORE_FROM)) {
+				try {
+					// 1. Get the list of fragments (e.g., {"C:\Users\...", "of", "Duty\ignore.txt"})
+					vector<string> fragments = conf.get(K_IGNORE_FROM);
+					string fullPathStr = "";
+
+					// 2. Re-assemble them with spaces
+					for (size_t i = 0; i < fragments.size(); ++i) {
+						fullPathStr += fragments[i];
+						if (i < fragments.size() - 1) fullPathStr += " ";
+					}
+
+					// 3. Clean and convert to path
+					fullPathStr.erase(remove(fullPathStr.begin(), fullPathStr.end(), '\"'), fullPathStr.end());
+					path includeFromFile(fullPathStr);
+
+					if (exists(includeFromFile)) {
+						ignorePaths = getContentFromFile(includeFromFile);
+					}
+					else {
+						cerr << "Warning: Include file not found at " << includeFromFile << endl;
+					}
+				}
+				catch (const exception& e) {
+					cerr << "Path error: " << e.what() << endl;
+				}
+			}
+			else if (conf.has(K_IGNORE)) {
+				ignorePaths = conf.get(K_IGNORE);
+			}
+			else if (conf.has(K_USE_REPO_CONFIG)) {
+				//create path for .repoignore
+				path installDir;
+				if (localAppData != nullptr) {
+					installDir = path(localAppData) / "dir2md";
+					free(localAppData);
+				}
+				else {
+					installDir = current_path() / "config";
+				}
+
+				path ignoreFilePath = installDir / ".repoignore";
+
+				// 2. Create the directory if it doesn't exist
+				try {
+					if (!exists(installDir)) {
+						create_directories(installDir);
+					}
+				}
+				catch (const filesystem_error& e) {
+					// Final fallback to current directory if AppData is locked
+					installDir = current_path();
+					ignoreFilePath = installDir / ".repoignore";
+				}
+
+				// 3. Generate the file if it doesn't exist
+				if (!exists(ignoreFilePath)) {
+					ofstream ignoreFile(ignoreFilePath);
+					if (ignoreFile.is_open()) {
+						// Write the default ignore values line-by-line
+						ignorePaths = { ".git/*", "build/*", "node_modules/*" };
+
+						ofstream ignoreFile(ignoreFilePath);
+						if (ignoreFile.is_open()) {
+							for (const string& ip : ignorePaths) {
+								ignoreFile << ip << endl;
+							}
+							ignoreFile.close();
+						}
+					}
+				}
+				else {
+					ignorePaths = getContentFromFile(ignoreFilePath);
+				}
+			}
+
 			//1. extract the ignore paths and assemble each of them with the root path
 			vector<string> preassembledIgnorePaths;
-			for (const string& ignorePath : conf.get(K_IGNORE)) {
+			for (const string& ignorePath : ignorePaths) {
 				string ipConverted = ignorePath;
 
 				//swap out instances of '/' with '\\'
@@ -220,7 +307,7 @@ int main(int argc, char* argv[]) {
 			stringstream ss;
 
 			//Start the traversal from the root to assign metadata
-			rootTree.collectFilesWithExtensions(preassembledIgnorePaths);
+			//rootTree.collectFilesWithExtensions(preassembledIgnorePaths);
 
 			rootTree.print(preassembledIgnorePaths, ss);
 
