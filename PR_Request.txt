@@ -1,0 +1,6 @@
+Test files got annoying to change with every update to the repository, so I stored them into text files
+
+Noticed that location of certain modules in use are ambiguous, so I removed 'using namespace' in certain locations
+
+Changed --exclude to --ignore and removed --include
+Reason: '!' negates files previously commanded to be ignored, so this modern convention is more reasonable than 'including' files or patterns

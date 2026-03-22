@@ -1,0 +1,5 @@
+--root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --include-ext yml .hpp md --ignore-dir-contents .git build node_modules --max-lines 200
+
+--root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --ignore .git/* build/* node_modules/* --max-lines 200
+
+--root C:\Users\micha\local-dev-workspace\dir2md --mode content structure --max-lines 200

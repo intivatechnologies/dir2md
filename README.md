@@ -197,14 +197,14 @@ Instead of manually managing .sln and .vcxproj files, CMake can generate them co
 ```
 cmake_minimum_required(VERSION 3.20)
 
-project(RepoContextClipboardForAi VERSION 1.0 LANGUAGES CXX)
+project(dir2md VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-add_executable(RepoContextClipboardForAi main.cpp)
+add_executable(dir2md main.cpp)
 ```
 
 What this does:
@@ -214,7 +214,7 @@ What this does:
 - `add_executable(HelloWorld main.cpp)` creates an executable target named HelloWorld from main.cpp
 
 When CMake runs, it generates:
-- `RepoContextClipboardForAi.sln`
+- `dir2md.sln`
 - Associated `.vcxproj` files
 
 ## Project Build Steps
